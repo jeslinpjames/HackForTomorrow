@@ -1,0 +1,264 @@
+
+// "use client";
+// import React, { useState, useEffect } from 'react';
+// import { Volume2, RefreshCw, Settings, HelpCircle, Moon, Sun, ChevronRight, ChevronLeft } from 'lucide-react';
+// import { Alert, AlertDescription } from '@/components/ui/alert';
+// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/cards';
+// import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+
+// const signs = {
+
+//   A: "/signs/A.png",
+//   B: "/signs/B.png",
+//   C: "/signs/C.png",
+//   D: "/signs/D.png",
+//   E: "/signs/E.png",
+//   F: "/signs/F.png",
+//   G: "/signs/G.png",
+//   H: "/signs/H.png",
+//   I: "/signs/I.png",
+//   J: "/signs/J.png",
+//   K: "/signs/K.png",
+//   L: "/signs/L.png",
+//   M: "/signs/M.png",
+//   N: "/signs/N.png",
+//   O: "/signs/O.png",
+//   P: "/signs/P.png",
+//   Q: "/signs/Q.png",
+//   R: "/signs/R.png",
+//   S: "/signs/S.png",
+//   T: "/signs/T.png",
+//   U: "/signs/U.png",
+//   V: "/signs/V.png",
+//   W: "/signs/W.png",
+//   X: "/signs/X.png",
+//   Y: "/signs/Y.png",
+//   Z: "/signs/Z.png",
+//   " ": "/signs/space.png",
+// };
+
+// const SignTranslate = () => {
+//   const [text, setText] = useState("");
+//   const [currentIndex, setCurrentIndex] = useState(0);
+//   const [speed, setSpeed] = useState(1000);
+//   const [isPlaying, setIsPlaying] = useState(false);
+//   const [darkMode, setDarkMode] = useState(false);
+//   const [showHelp, setShowHelp] = useState(false);
+//   const [fontSize, setFontSize] = useState('normal');
+
+//   const handleChange = (e) => {
+//     setText(e.target.value.toUpperCase());
+//     setCurrentIndex(0);
+//   };
+
+//   const handleSpeak = () => {
+//     if ('speechSynthesis' in window) {
+//       const utterance = new SpeechSynthesisUtterance(text);
+//       utterance.rate = 0.8; // Slightly slower for better clarity
+//       window.speechSynthesis.speak(utterance);
+//     }
+//   };
+
+//   const togglePlayPause = () => {
+//     setIsPlaying(!isPlaying);
+//   };
+
+//   const nextSign = () => {
+//     setCurrentIndex((prev) => (prev + 1) % text.length);
+//   };
+
+//   const prevSign = () => {
+//     setCurrentIndex((prev) => (prev - 1 + text.length) % text.length);
+//   };
+
+//   useEffect(() => {
+//     let interval;
+//     if (isPlaying && text.length > 0) {
+//       interval = setInterval(() => {
+//         setCurrentIndex((prev) => (prev + 1) % text.length);
+//       }, speed);
+//     }
+//     return () => clearInterval(interval);
+//   }, [isPlaying, text, speed]);
+
+//   const fontSizes = {
+//     small: 'text-sm',
+//     normal: 'text-base',
+//     large: 'text-lg',
+//     xlarge: 'text-xl'
+//   };
+
+//   return (
+//     <div className={`min-h-screen p-4 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
+//       <Card className={`max-w-6xl mx-auto ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+//         <CardHeader className="space-y-2">
+//           <div className="flex justify-between items-center">
+//             <CardTitle className={`${fontSizes[fontSize]} font-bold`}>
+//               Sign Language Translator
+//             </CardTitle>
+//             <div className="flex gap-2">
+//               <button
+//                 onClick={() => setDarkMode(!darkMode)}
+//                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+//               >
+//                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+//               </button>
+//               <button
+//                 onClick={() => setShowHelp(!showHelp)}
+//                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+//               >
+//                 <HelpCircle size={20} />
+//               </button>
+//             </div>
+//           </div>
+          
+//           {showHelp && (
+//             <Alert>
+//               <AlertDescription>
+//                 • Type or paste text to see sign language translations
+//                 • Use the play/pause button to control animation
+//                 • Adjust speed with the slider
+//                 • Click the speaker icon for text-to-speech
+//                 • Use arrow keys to navigate signs manually
+//               </AlertDescription>
+//             </Alert>
+//           )}
+//         </CardHeader>
+
+//         <CardContent className="space-y-4">
+//           <div className="flex flex-col lg:flex-row gap-4">
+//             <div className="w-full lg:w-1/2 space-y-2">
+//               <textarea
+//                 value={text}
+//                 onChange={handleChange}
+//                 className={`w-full h-48 p-4 border rounded-lg ${
+//                   darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white'
+//                 } ${fontSizes[fontSize]}`}
+//                 placeholder="Enter text here..."
+//               />
+              
+//               <div className="flex justify-between items-center">
+//                 <div className="flex gap-2">
+//                   <button
+//                     onClick={handleSpeak}
+//                     className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+//                     title="Text to Speech"
+//                   >
+//                     <Volume2 size={20} />
+//                   </button>
+//                   <button
+//                     onClick={() => setText("")}
+//                     className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+//                     title="Clear Text"
+//                   >
+//                     <RefreshCw size={20} />
+//                   </button>
+//                 </div>
+                
+//                 <select
+//                   value={fontSize}
+//                   onChange={(e) => setFontSize(e.target.value)}
+//                   className={`p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-white'}`}
+//                 >
+//                   <option value="small">Small Text</option>
+//                   <option value="normal">Normal Text</option>
+//                   <option value="large">Large Text</option>
+//                   <option value="xlarge">Extra Large Text</option>
+//                 </select>
+//               </div>
+//             </div>
+
+//             <div className={`w-full lg:w-1/2 p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+//               <div className="grid grid-cols-6 gap-2">
+//                 {text.split("").map((char, index) => (
+//                   <div 
+//                     key={index}
+//                     className={`p-2 rounded ${
+//                       index === currentIndex ? 'ring-2 ring-blue-500' : ''
+//                     }`}
+//                   >
+//                     {signs[char] ? (
+//                       <img
+//                         src={signs[char]}
+//                         alt={`Sign for ${char}`}
+//                         className="w-full h-auto"
+//                         loading="lazy"
+//                       />
+//                     ) : (
+//                       <div className="w-full h-24 flex items-center justify-center border rounded-lg">
+//                         {char}
+//                       </div>
+//                     )}
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+//           </div>
+
+//           {text && (
+//             <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+//               <div className="flex flex-col items-center space-y-4">
+//                 <h2 className={`${fontSizes[fontSize]} font-bold`}>Current Sentence</h2>
+//                 <div className="flex items-center gap-4">
+//                   <button
+//                     onClick={prevSign}
+//                     className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
+//                   >
+//                     <ChevronLeft size={24} />
+//                   </button>
+                  
+//                   <div className="relative w-32 h-32">
+//                     {signs[text[currentIndex]] ? (
+//                       <img
+//                         src={signs[text[currentIndex]]}
+//                         alt={`Sign for ${text[currentIndex]}`}
+//                         className="w-full h-full object-contain"
+//                       />
+//                     ) : (
+//                       <div className="w-full h-full flex items-center justify-center border rounded-lg">
+//                         {text[currentIndex]}
+//                       </div>
+//                     )}
+//                   </div>
+                  
+//                   <button
+//                     onClick={nextSign}
+//                     className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
+//                   >
+//                     <ChevronRight size={24} />
+//                   </button>
+//                 </div>
+                
+//                 <div className="flex items-center gap-4">
+//                   <button
+//                     onClick={togglePlayPause}
+//                     className={`px-4 py-2 rounded-lg ${
+//                       isPlaying ? 'bg-red-500' : 'bg-blue-500'
+//                     } text-white`}
+//                   >
+//                     {isPlaying ? 'Pause' : 'Play'}
+//                   </button>
+                  
+//                   <input
+//                     type="range"
+//                     min="500"
+//                     max="2000"
+//                     step="100"
+//                     value={speed}
+//                     onChange={(e) => setSpeed(Number(e.target.value))}
+//                     className="w-32"
+//                   />
+//                   <span className={fontSizes[fontSize]}>
+//                     Speed: {speed}ms
+//                   </span>
+//                 </div>
+//               </div>
+//             </div>
+//           )}
+//         </CardContent>
+//       </Card>
+//     </div>
+//   );
+// };
+
+// export default SignTranslate;
