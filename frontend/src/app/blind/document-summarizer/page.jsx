@@ -1,6 +1,6 @@
 "use client"
 import { useRouter } from "next/navigation";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 
 const Upload = () => {
   const [file, setFile] = useState(null);
@@ -11,6 +11,7 @@ const Upload = () => {
   const [hoverTimer, setHoverTimer] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const router = useRouter();
+  const recognitionRef = useRef(null);
   
   const speak = (text) => {
     if ("speechSynthesis" in window) {
@@ -70,7 +71,7 @@ const Upload = () => {
     formData.append("file", file);
     
     try {
-      const response = await fetch("http://127.0.0.1:5000/upload_document", {
+      const response = await fetch("http://127.0.0.1:5000/api/upload_document", {
         method: "POST",
         body: formData
       });
@@ -97,9 +98,18 @@ const Upload = () => {
       return;
     }
 
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      setStatus("Stopped listening");
+      speak("Stopped listening");
+      return;
+    }
+
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = "en-US";
     recognition.interimResults = false;
+    recognitionRef.current = recognition;
 
     recognition.start();
     setIsListening(true);
@@ -111,7 +121,7 @@ const Upload = () => {
       setStatus(`Processing query: ${query}`);
       
       try {
-        const response = await fetch("http://127.0.0.1:5000/rag_query", {
+        const response = await fetch("http://127.0.0.1:5000/api/rag_query", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ query, filename })
@@ -149,7 +159,7 @@ const Upload = () => {
     speak("Generating document summary");
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/summarize", {
+      const response = await fetch("http://127.0.0.1:5000/api/summarize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ filename })
@@ -232,19 +242,18 @@ const Upload = () => {
           {/* Voice Query Button */}
           <button
             onClick={startVoiceQuery}
-            disabled={isListening}
-            onMouseEnter={() => handleMouseEnter("Click or press Enter to start voice recognition and ask questions about your document.")}
+            onMouseEnter={() => handleMouseEnter("Click or press Enter to start or stop voice recognition and ask questions about your document.")}
             onMouseLeave={handleMouseLeave}
             className={`w-full h-40 ${
               isListening ? 'bg-red-800' : 'bg-green-800 hover:bg-green-700'
             } text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center`}
-            aria-label="Start voice query"
+            aria-label="Start or stop voice query"
           >
             <svg className="w-16 h-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
             </svg>
             <span className="text-2xl font-bold">
-              {isListening ? "Listening..." : "Ask a Question"}
+              {isListening ? "Stop Listening" : "Ask a Question"}
             </span>
           </button>
 
