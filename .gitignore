@@ -2,5 +2,8 @@
 .vscode/
 *venv/
 __pycache__
+uploaded_documents
+UPLOAD_FOLDER
+OUTPUT_FOLDER
 node_modules
 frontend/node_modules
