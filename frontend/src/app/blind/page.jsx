@@ -7,7 +7,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Mic, FileSearch, FileText, Image } from "lucide-react";
+import { Mic, FileSearch, FileText, Image, Youtube, BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const BlindPage = () => {
@@ -54,6 +54,20 @@ const BlindPage = () => {
             icon: <FileSearch className="w-24 h-24 text-white" />,
             path: "/blind/document-summarizer",
             bgColor: "bg-[#5ba300] hover:bg-[#5ba300]/90",
+        },
+        {
+            title: "YouTube Braille",
+            description: "Convert YouTube video content to Braille format",
+            icon: <Youtube className="w-24 h-24 text-white" />,
+            path: "/blind/youtube-braille",
+            bgColor: "bg-[#FF0000] hover:bg-[#FF0000]/90",
+        },
+        {
+            title: "MCQ Generator",
+            description: "Generate multiple choice questions from text content",
+            icon: <BookOpen className="w-24 h-24 text-white" />,
+            path: "/blind/mcq-generator",
+            bgColor: "bg-[#6b21a8] hover:bg-[#6b21a8]/90",
         },
     ];
 
