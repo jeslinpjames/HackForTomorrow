@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Mic } from 'lucide-react'; // Added Mic icon
 import { useVoiceAssistance } from "@/hooks/useVoiceAssistance";
 
 const MCQPage = () => {
@@ -15,7 +16,7 @@ const MCQPage = () => {
     const [showScore, setShowScore] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [hasAnnounced, setHasAnnounced] = useState(false);
+    const [isListening, setIsListening] = useState(false); // Added state for listening
     const { speak } = useVoiceAssistance();  // Remove announce
 
     const handleGenerateMCQs = async () => {
@@ -98,6 +99,39 @@ const MCQPage = () => {
     const handleQuestionHover = useCallback((text) => {
         speak(text);
     }, [speak]);
+
+    const handleSpeechRecognition = () => {
+        if (!('webkitSpeechRecognition' in window)) {
+            alert('Speech recognition not supported in this browser.');
+            return;
+        }
+
+        const recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => {
+            setIsListening(true);
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            setChapterName(transcript);
+            setIsListening(false);
+        };
+
+        recognition.onerror = (event) => {
+            console.error(event.error);
+            setIsListening(false);
+        };
+
+        recognition.onend = () => {
+            setIsListening(false);
+        };
+
+        recognition.start();
+    };
 
     // Render current question
     const renderCurrentQuestion = () => {
@@ -183,6 +217,13 @@ const MCQPage = () => {
                                     onMouseEnter={() => handleQuestionHover(loading ? "Generating MCQs" : "Generate MCQs")}
                                 >
                                     {loading ? 'Generating...' : 'Generate MCQs'}
+                                </Button>
+                                <Button
+                                    onClick={handleSpeechRecognition}
+                                    className={`p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 ${isListening && "bg-gray-200"}`}
+                                    title="Start speech recognition"
+                                >
+                                    <Mic size={20} />
                                 </Button>
                             </div>
 
