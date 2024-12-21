@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { useSpeech } from "@/hooks/speech";
 import {
     Card,
     CardDescription,
@@ -11,48 +12,13 @@ import { useRouter } from "next/navigation";
 
 const BlindPage = () => {
     const router = useRouter();
-
-    const getFemaleVoice = () => {
-        const voices = window.speechSynthesis.getVoices();
-        return voices.find((voice) =>
-            voice.name.includes("Google UK English Female") ||
-            voice.name.includes("Microsoft Zira") ||
-            voice.name.includes("female") ||
-            voice.name.includes("Female")
-        ) || voices[0];
-    };
+    const { speakText } = useSpeech();
 
     useEffect(() => {
         speakText(
             "Welcome to the Visual Assistance Tools. Hover over the options to hear their descriptions.",
         );
-    }, []);
-
-    const speakText = (text) => {
-        try {
-            const synthesis = window.speechSynthesis;
-            synthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-
-            if (synthesis.getVoices().length === 0) {
-                synthesis.addEventListener("voiceschanged", () => {
-                    utterance.voice = getFemaleVoice();
-                    utterance.rate = 0.8;
-                    utterance.pitch = 1.5;
-                    utterance.volume = 1.0;
-                    synthesis.speak(utterance);
-                }, { once: true });
-            } else {
-                utterance.voice = getFemaleVoice();
-                utterance.rate = 0.8;
-                utterance.pitch = 1.5;
-                utterance.volume = 1.0;
-                synthesis.speak(utterance);
-            }
-        } catch (error) {
-            console.error("Speech error:", error);
-        }
-    };
+    }, [speakText]);
 
     const handleHover = (title, description) => {
         speakText(`${title}. ${description}`);
@@ -68,10 +34,10 @@ const BlindPage = () => {
             bgColor: "bg-[#0A5EB0] hover:bg-[#0A5EB0]/90",
         },
         {
-            title: "Image Recognition",
+            title: "Scene Description",
             description: "Upload and analyze images for detailed descriptions",
             icon: <Image className="w-24 h-24 text-white" />,
-            path: "/blind/display",
+            path: "/blind/scene-description",
             bgColor: "bg-[#4B4376] hover:bg-[#4B4376]/90",
         },
         {
@@ -86,7 +52,7 @@ const BlindPage = () => {
             description:
                 "Convert and summarize documents into accessible formats",
             icon: <FileSearch className="w-24 h-24 text-white" />,
-            path: "/blind/docs",
+            path: "/blind/document-summarizer",
             bgColor: "bg-[#5ba300] hover:bg-[#5ba300]/90",
         },
     ];
@@ -100,7 +66,7 @@ const BlindPage = () => {
                         className={`w-full h-full cursor-pointer transition-all duration-500 
               ${feature.bgColor}
               rounded-none border-0 shadow-2xl
-              group-hover:opacity-[0.35] hover:!opacity-100`}
+              group-hover:opacity-[0.25] hover:!opacity-100`}
                         onClick={() => router.push(feature.path)}
                         onMouseEnter={() =>
                             handleHover(feature.title, feature.description)}
