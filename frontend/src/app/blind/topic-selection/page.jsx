@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useSpeech } from "@/hooks/speech";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,14 +7,18 @@ import { Button } from "@/components/ui/button";
 
 export default function TopicSelection() {
     const router = useRouter();
-    const { speakText } = useSpeech();
     const [transcription, setTranscription] = useState("");
     const [isRecording, setIsRecording] = useState(false);
 
+    const speak = (text) => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
+    };
+
     useEffect(() => {
-        speakText("Please speak the topic you want to learn about.");
+        speak("Please speak the topic you want to learn about.");
         initializeSpeechRecognition();
-    }, [speakText]);
+    }, []);
 
     const initializeSpeechRecognition = () => {
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -55,15 +58,15 @@ export default function TopicSelection() {
     const handleSubmit = async () => {
         if (transcription) {
             try {
-                await speakText(`Your selected topic is: ${transcription}`);
-                const response = await axios.post(`${NEXT_PUBLIC_BACKEND_URL}/api/topic-extract`, { 
+                speak(`Your selected topic is: ${transcription}`);
+                const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/get_response`, { 
                     topic: transcription 
                 });
                 
                 router.push(`/blind/topic-learn?topic=${encodeURIComponent(transcription)}`);
             } catch (error) {
                 console.error('Error submitting topic:', error);
-                speakText("Sorry, there was an error processing your request. Please try again.");
+                speak("Sorry, there was an error processing your request. Please try again.");
             }
         }
     };
