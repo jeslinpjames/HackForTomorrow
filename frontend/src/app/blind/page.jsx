@@ -52,7 +52,7 @@ const BlindPage = () => {
             description:
                 "Convert and summarize documents into accessible formats",
             icon: <FileSearch className="w-24 h-24 text-white" />,
-            path: "/blind/docs",
+            path: "/blind/document-summarizer",
             bgColor: "bg-[#5ba300] hover:bg-[#5ba300]/90",
         },
     ];
