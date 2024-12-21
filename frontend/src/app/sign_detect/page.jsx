@@ -3,7 +3,7 @@ import React, { useRef, useEffect, useState } from "react";
 import Webcam from "react-webcam";
 import * as tf from "@tensorflow/tfjs";
 import * as handpose from "@tensorflow-models/handpose";
-import { Camera, HandMetal, Settings2 } from "lucide-react";
+import { Camera, HandMetal, Settings2, Save, Eye, EyeOff } from "lucide-react";
 
 const HandSignLanguage = () => {
   const webcamRef = useRef(null);
@@ -14,6 +14,10 @@ const HandSignLanguage = () => {
   const [cameraError, setCameraError] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [detectionHistory, setDetectionHistory] = useState([]);
+  const [showLandmarks, setShowLandmarks] = useState(true);
+  const [confidenceThreshold, setConfidenceThreshold] = useState(70);
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [capturedResult, setCapturedResult] = useState("");
 
   const fingerIndices = {
     thumb: [1, 2, 3, 4],
@@ -172,6 +176,8 @@ const HandSignLanguage = () => {
   const drawHandLandmarks = (hand, ctx) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
+    if (!showLandmarks) return;
+
     ctx.strokeStyle = "#00ff00";
     ctx.lineWidth = 2;
 
@@ -246,6 +252,12 @@ const HandSignLanguage = () => {
       .sort(([, a], [, b]) => b - a)[0][0];
   };
 
+  const captureImage = () => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    setCapturedImage(imageSrc);
+    setCapturedResult(result);
+  };
+
   useEffect(() => {
     const initializeHandpose = async () => {
       try {
@@ -296,6 +308,7 @@ const HandSignLanguage = () => {
             ref={webcamRef}
             className="rounded-lg shadow-lg"
             style={{ width: 640, height: 480 }}
+            screenshotFormat="image/jpeg"
           />
           <canvas
             ref={canvasRef}
@@ -322,6 +335,36 @@ const HandSignLanguage = () => {
               <Camera className="w-4 h-4" />
               {showGuide ? "Hide" : "Show"} Guide
             </button>
+            <button
+              onClick={captureImage}
+              className="flex items-center gap-2 p-2 rounded bg-green-500 text-white hover:bg-green-600"
+            >
+              <Save className="w-4 h-4" />
+              Capture Image
+            </button>
+            <button
+              onClick={() => setShowLandmarks(!showLandmarks)}
+              className="flex items-center gap-2 p-2 rounded bg-yellow-500 text-white hover:bg-yellow-600"
+            >
+              {showLandmarks ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showLandmarks ? "Hide" : "Show"} Landmarks
+            </button>
+          </div>
+
+          <div className="mt-4">
+            <label htmlFor="confidenceThreshold" className="block text-sm font-medium text-gray-700">
+              Confidence Threshold: {confidenceThreshold}%
+            </label>
+            <input
+              type="range"
+              id="confidenceThreshold"
+              name="confidenceThreshold"
+              min="50"
+              max="100"
+              value={confidenceThreshold}
+              onChange={(e) => setConfidenceThreshold(e.target.value)}
+              className="w-full"
+            />
           </div>
 
           {showGuide && (
@@ -336,6 +379,14 @@ const HandSignLanguage = () => {
             </div>
           )}
         </div>
+
+        {capturedImage && (
+          <div className="mt-4">
+            <h3 className="text-xl font-bold">Captured Image</h3>
+            <img src={capturedImage} alt="Captured Hand Sign" className="rounded-lg shadow-lg mt-2" />
+            <div className="text-lg font-bold mt-2">Detected Sign: {capturedResult}</div>
+          </div>
+        )}
       </div>
     </div>
   );
