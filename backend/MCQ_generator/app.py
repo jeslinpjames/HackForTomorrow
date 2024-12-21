@@ -1,27 +1,28 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import google.generativeai as genai
+import os
 import json
 import re
-import google.generativeai as genai
-import os  # Added for environment variables
+from dotenv import load_dotenv
 
+# Flask App Initialization
 app = Flask(__name__)
-# Configure CORS with specific settings
-CORS(app, resources={
-    r"/*": {
-        "origins": ["http://localhost:3000"],  # Allow requests from Next.js development server
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
-    }
-})
+CORS(app)
 
+# ---------------------------
+# MCQ Generator Class
+# ---------------------------
 class MCQGenerator:
-    # ...existing code...
     def __init__(self):
-        genai.configure(api_key=os.getenv("GENAI_API_KEY"))  # Use environment variable
+        load_dotenv()
+        genai.configure(api_key=os.getenv('GOOGLE_AI_API_KEY'))
         self.model = genai.GenerativeModel("gemini-1.5-flash")
     
     def generate_mcq_for_chapter(self, chapter_name):
+        """
+        Generate MCQs for the given chapter name.
+        """
         prompt = f"""Generate 10 multiple-choice questions (2 questions each from 5 important topics) 
         for the chapter: {chapter_name}. 
         Strictly follow this JSON format:
@@ -40,6 +41,7 @@ class MCQGenerator:
         """
         response = self.model.generate_content(prompt)
         
+        # Extract JSON from the response
         questions_data = self.extract_json_from_text(response.text)
         
         if not questions_data:
@@ -59,11 +61,14 @@ class MCQGenerator:
         return full_mcqs
 
     def extract_json_from_text(self, text):
-        # Clean the text and attempt to extract JSON
+        """
+        Extract JSON from the API response text.
+        """
+        text = text.replace('json', '').strip()
         try:
             return json.loads(text)
         except json.JSONDecodeError:
-            # Try to find JSON-like structure using regex
+            # Attempt to extract JSON using regex
             json_match = re.search(r'\[.*\]', text, re.DOTALL | re.MULTILINE | re.UNICODE)
             if json_match:
                 try:
@@ -72,41 +77,60 @@ class MCQGenerator:
                     pass
         return None
 
-    def save_answers(self, chapter_name, answer_key):
-        # Optional method to save answers locally
-        safe_filename = ''.join(c if c.isalnum() or c in [' ', ''] else '' for c in chapter_name)
-        safe_filename = safe_filename.replace(' ', '_').lower()
-        
-        answers_filename = f"{safe_filename}_answers.json"
-        with open(answers_filename, 'w', encoding='utf-8') as f:
-            json.dump(answer_key, f, indent=2)
-        
-        print(f"\nAnswers saved to {answers_filename}")
+    def save_answers(self, chapter_name, mcqs):
+        """
+        Save MCQs to a local JSON file.
+        """
+        filename = f"answers_{chapter_name.replace(' ', '_')}.json"
+        with open(filename, 'w') as file:
+            json.dump(mcqs, file, indent=4)
+        print(f"Answers saved to {filename}")
 
-@app.route('/mcq/generatemcq/', methods=['POST', 'OPTIONS'])  # Add OPTIONS method
+# ---------------------------
+# Flask Routes
+# ---------------------------
+@app.route('/mcq/generatemcq/', methods=['POST'])
 def generate_mcq():
-    # Handle preflight OPTIONS request
-    if request.method == 'OPTIONS':
-        response = app.make_default_options_response()
-        return response
-        
-    # Handle POST request
+    """
+    API Endpoint to generate MCQs.
+    """
     if request.method == 'POST':
         try:
+            # Parse incoming JSON data
             data = request.get_json()
             chapter_name = data.get('chapter_name')
+        except (json.JSONDecodeError, TypeError):
+            return jsonify({'error': 'Invalid JSON format'}), 400
+        
+        # Validate chapter name
+        if not chapter_name:
+            return jsonify({'error': 'Chapter name is required'}), 400
+        
+        # Create MCQ Generator instance
+        generator = MCQGenerator()
+        
+        try:
+            # Generate MCQs
+            mcqs = generator.generate_mcq_for_chapter(chapter_name)
             
-            if not chapter_name:
-                return jsonify({'error': 'Chapter name is required'}), 400
-            
-            generator = MCQGenerator()
-            mcqs = generator.generate_mcq_for_chapter(chapter_name)           
+            # Optionally save answers
             generator.save_answers(chapter_name, mcqs)
-            return jsonify({'message': 'MCQs generated successfully', 'answer_key': mcqs})
+            
+            # Return full MCQ details
+            return jsonify({
+                'message': 'MCQs generated successfully', 
+                'answer_key': mcqs
+            })
         except Exception as e:
+            # Log the error
+            import traceback
+            traceback.print_exc()
             return jsonify({'error': str(e)}), 500
+    
     return jsonify({'error': 'Invalid request method'}), 405
 
-# Added block to run the Flask app
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5001, debug=True)  # Added debug=True for better error messages
+# ---------------------------
+# Run the Flask App
+# ---------------------------
+if __name__ == '__main__':
+    app.run(port=5001, debug=True)
