@@ -1,13 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useCamera } from "@/hooks/useCamera";
-import { useSpeech } from "@/hooks/speech";
 import { useRouter } from "next/navigation";
 
 export default function Page() {
     const router = useRouter();
     const { videoRef, canvasRef, startCamera, captureImage } = useCamera();
-    const { speakText } = useSpeech();
+
+    const speakText = (text) => {
+        window.speechSynthesis.cancel();
+        const utterance = new window.SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
+    };
 
     const [sceneDescription, setSceneDescription] = useState("");
     const [hasLearning, setHasLearning] = useState(false);
@@ -62,7 +66,7 @@ export default function Page() {
         formData.append("image", blob, "captured_image.jpg");
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/scene-description`, {
+            const response = await fetch(`http://127.0.0.1:5000/api/scene-description`, {
                 method: "POST",
                 body: formData,
                 // Add proper headers
@@ -110,11 +114,29 @@ export default function Page() {
     };
 
     const handleHover = (text) => {
+        if (window.speechSynthesis.speaking) return;
         window.speechSynthesis.cancel();
         speakText(text);
     };
 
-    const handleNo = () => router.refresh();
+    const handleNo = async () => {
+        // Reset states
+        setSceneDescription("");
+        setHasLearning(false);
+        setLearningContent("");
+        setShowLearning(false);
+        setLearningNarrated(false);
+        setError(null);
+        
+        // Restart camera
+        try {
+            const stream = await startCamera();
+            setTimeout(() => handleCapture(stream), 3000);
+        } catch (err) {
+            setError(err.message);
+            speakText(err.message);
+        }
+    };
 
     const handleBack = () => router.push("/blind");
 

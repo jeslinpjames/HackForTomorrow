@@ -59,7 +59,7 @@ export default function TopicSelection() {
         if (transcription) {
             try {
                 speak(`Your selected topic is: ${transcription}`);
-                const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/get_response`, { 
+                const response = await axios.post(`http://127.0.0.1:5000/api/get_response`, { 
                     topic: transcription 
                 });
                 
