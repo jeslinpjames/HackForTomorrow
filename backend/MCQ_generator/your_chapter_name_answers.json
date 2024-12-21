@@ -1,0 +1,112 @@
+[
+  {
+    "question_number": 1,
+    "question": "What is the primary function of the Golgi apparatus?",
+    "options": [
+      "Protein synthesis",
+      "Cellular respiration",
+      "Modification and packaging of proteins",
+      "DNA replication"
+    ],
+    "correct_answer_option": "C"
+  },
+  {
+    "question_number": 2,
+    "question": "Which organelle is responsible for generating ATP, the cell's primary energy currency?",
+    "options": [
+      "Golgi apparatus",
+      "Mitochondria",
+      "Ribosomes",
+      "Lysosomes"
+    ],
+    "correct_answer_option": "B"
+  },
+  {
+    "question_number": 3,
+    "question": "What is the role of the endoplasmic reticulum (ER) in protein synthesis?",
+    "options": [
+      "It breaks down proteins",
+      "It synthesizes lipids only",
+      "It provides structural support to the cell",
+      "It synthesizes and modifies proteins"
+    ],
+    "correct_answer_option": "D"
+  },
+  {
+    "question_number": 4,
+    "question": "What type of ER is studded with ribosomes and involved in protein synthesis?",
+    "options": [
+      "Smooth endoplasmic reticulum",
+      "Rough endoplasmic reticulum",
+      "Mitochondrial reticulum",
+      "Nuclear reticulum"
+    ],
+    "correct_answer_option": "B"
+  },
+  {
+    "question_number": 5,
+    "question": "Lysosomes are responsible for:",
+    "options": [
+      "Energy production",
+      "Protein synthesis",
+      "Waste breakdown and recycling",
+      "DNA replication"
+    ],
+    "correct_answer_option": "C"
+  },
+  {
+    "question_number": 6,
+    "question": "Which of the following is NOT a component of the cell membrane?",
+    "options": [
+      "Phospholipids",
+      "Proteins",
+      "Nucleic acids",
+      "Carbohydrates"
+    ],
+    "correct_answer_option": "C"
+  },
+  {
+    "question_number": 7,
+    "question": "What is the function of the cell membrane?",
+    "options": [
+      "To generate energy",
+      "To store genetic information",
+      "To regulate the passage of materials into and out of the cell",
+      "To synthesize proteins"
+    ],
+    "correct_answer_option": "C"
+  },
+  {
+    "question_number": 8,
+    "question": "What is the fluid mosaic model a description of?",
+    "options": [
+      "The structure of the cell wall",
+      "The structure of the cell membrane",
+      "The movement of cytoplasm",
+      "The structure of the nucleus"
+    ],
+    "correct_answer_option": "B"
+  },
+  {
+    "question_number": 9,
+    "question": "What is the primary function of ribosomes?",
+    "options": [
+      "To package proteins",
+      "To transport proteins",
+      "To synthesize proteins",
+      "To store genetic information"
+    ],
+    "correct_answer_option": "C"
+  },
+  {
+    "question_number": 10,
+    "question": "Where are ribosomes located in the cell?",
+    "options": [
+      "Only in the nucleus",
+      "Only in the cytoplasm",
+      "Both in the cytoplasm and bound to the endoplasmic reticulum",
+      "Only in the Golgi apparatus"
+    ],
+    "correct_answer_option": "C"
+  }
+]
