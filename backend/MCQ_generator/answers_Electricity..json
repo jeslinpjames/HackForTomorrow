@@ -1,0 +1,112 @@
+[
+    {
+        "question_number": 1,
+        "question": "What is the SI unit of electric current?",
+        "options": [
+            "Ampere",
+            "Volt",
+            "Ohm",
+            "Watt"
+        ],
+        "correct_answer_option": "Ampere"
+    },
+    {
+        "question_number": 2,
+        "question": "Which of the following is a good conductor of electricity?",
+        "options": [
+            "Rubber",
+            "Wood",
+            "Copper",
+            "Plastic"
+        ],
+        "correct_answer_option": "Copper"
+    },
+    {
+        "question_number": 3,
+        "question": "Ohm's law states the relationship between which three quantities?",
+        "options": [
+            "Current, voltage, resistance",
+            "Power, voltage, current",
+            "Resistance, power, voltage",
+            "Current, resistance, power"
+        ],
+        "correct_answer_option": "Current, voltage, resistance"
+    },
+    {
+        "question_number": 4,
+        "question": "What is the unit of electrical resistance?",
+        "options": [
+            "Ampere",
+            "Volt",
+            "Ohm",
+            "Watt"
+        ],
+        "correct_answer_option": "Ohm"
+    },
+    {
+        "question_number": 5,
+        "question": "A parallel circuit has:",
+        "options": [
+            "One path for current to flow",
+            "Multiple paths for current to flow",
+            "High resistance compared to series circuit",
+            "Lower current flow than series circuit"
+        ],
+        "correct_answer_option": "Multiple paths for current to flow"
+    },
+    {
+        "question_number": 6,
+        "question": "What happens to the resistance of a wire if its length is doubled?",
+        "options": [
+            "It is halved",
+            "It remains the same",
+            "It is doubled",
+            "It is quadrupled"
+        ],
+        "correct_answer_option": "It is doubled"
+    },
+    {
+        "question_number": 7,
+        "question": "Which device is used to measure electric potential difference?",
+        "options": [
+            "Ammeter",
+            "Voltmeter",
+            "Ohmmeter",
+            "Wattmeter"
+        ],
+        "correct_answer_option": "Voltmeter"
+    },
+    {
+        "question_number": 8,
+        "question": "What is the formula for calculating electrical power?",
+        "options": [
+            "P = IV",
+            "P = I/V",
+            "P = V/I",
+            "P = R/I"
+        ],
+        "correct_answer_option": "P = IV"
+    },
+    {
+        "question_number": 9,
+        "question": "Two resistors of 4 ohms and 6 ohms are connected in series. What is the total resistance?",
+        "options": [
+            "2 ohms",
+            "10 ohms",
+            "24 ohms",
+            "0.24 ohms"
+        ],
+        "correct_answer_option": "10 ohms"
+    },
+    {
+        "question_number": 10,
+        "question": "Two resistors of 4 ohms and 6 ohms are connected in parallel. What is the total resistance?",
+        "options": [
+            "2.4 ohms",
+            "10 ohms",
+            "24 ohms",
+            "0.24 ohms"
+        ],
+        "correct_answer_option": "2.4 ohms"
+    }
+]
