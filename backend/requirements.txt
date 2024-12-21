@@ -1,2 +1,2 @@
-sign-language-translator
+sign-language-translator[all]
 flask
