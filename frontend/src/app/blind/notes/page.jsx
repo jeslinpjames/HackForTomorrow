@@ -171,7 +171,7 @@ const NoteMakingPage = () => {
 
             <div className="flex justify-center items-center p-0 border-gray-600 bg-gradient-to-r from-[#28a745] to-[#28a745] shadow-2xl cursor-pointer transition-opacity duration-300 group-hover:opacity-20 hover:!opacity-100"
                 onMouseEnter={() => handleHover("Go back to the home page")}
-                onClick={() => (window.location.href = "/visual")}>
+                onClick={() => (window.location.href = "/blind")}>
                 <h1 className="text-7xl font-bold text-white">Home</h1>
             </div>
         </div>
