@@ -69,37 +69,50 @@ export default function Page() {
             const response = await fetch(`http://127.0.0.1:5000/api/scene-description`, {
                 method: "POST",
                 body: formData,
-                // Add proper headers
                 headers: {
                     'Accept': 'application/json',
                 },
             });
 
+            // First check if response is OK
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Failed to process image");
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
-            
-            // Validate response data
-            if (!data.scene_description) {
-                throw new Error("Invalid response from server");
+            // Get the content type
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Server didn't return JSON");
+            }
+
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.error("JSON Parse error:", parseError);
+                throw new Error("Failed to parse server response");
+            }
+
+            if (!data || !data.scene_description) {
+                throw new Error("Invalid response format from server");
             }
 
             setSceneDescription(data.scene_description);
             setHasLearning(data.has_learning || false);
             setLearningContent(data.learning || "");
-            setShowButtons(true);
             
-            // Sequential speech
+            // First speak the scene description
             await speakText(data.scene_description);
+            
+            // Only after description is complete, show buttons and ask about learning
+            setShowButtons(true);
             if (data.has_learning) {
                 await speakText("Would you like to learn more about what you're seeing?");
             }
         } catch (err) {
+            console.error("API Error:", err);
             setError(err.message);
-            // speakText("Error processing image: " + err.message);
+            speakText("Sorry, there was an error processing the image.");
         } finally {
             setIsProcessing(false);
         }
