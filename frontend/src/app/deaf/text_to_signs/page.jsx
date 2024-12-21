@@ -1,11 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+
+// Dynamic import of SequentialVideoPlayer with SSR disabled
+const SequentialVideoPlayer = dynamic(
+  () => import('../../components/SequentialVideoPlayer'),
+  { ssr: false }
+);
 
 export default function TextToSigns() {
   const [topic, setTopic] = useState('');
   const [generatedText, setGeneratedText] = useState('');
-  const [translatedSigns, setTranslatedSigns] = useState([]);
+  const [videoSigns, setVideoSigns] = useState([]);
+  const [textSigns, setTextSigns] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -34,10 +42,11 @@ export default function TextToSigns() {
     setLoading(false);
   };
 
-  const handleTranslateText = async () => {
+  const handleTranslateText = useCallback(async () => {
     if (!generatedText) return;
     setError('');
-    setTranslatedSigns([]); // Reset signs before new translation
+    setVideoSigns([]); // Only reset at the start of new translation
+    setTextSigns([]);
     setLoading(true);
 
     try {
@@ -50,12 +59,8 @@ export default function TextToSigns() {
         body: JSON.stringify({ text: generatedText }),
       });
 
-      if (!response.ok) {
+      if (!response.ok || !response.body) {
         throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      if (!response.body) {
-        throw new Error("No response body from server.");
       }
 
       const reader = response.body.getReader();
@@ -64,63 +69,35 @@ export default function TextToSigns() {
 
       while (true) {
         const { value, done } = await reader.read();
-        
-        if (done) {
-          console.log("Stream complete");
-          break;
-        }
+        if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Keep incomplete chunk
+        buffer = lines.pop() || '';
 
         for (const line of lines) {
           if (line.trim()) {
             try {
               const signData = JSON.parse(line);
-              console.log("Received sign data type:", signData.type);
               if (signData.type === 'video') {
-                console.log("Video data length:", signData.data.length);
+                // Use functional update to ensure state updates are sequential
+                setVideoSigns(prev => [...prev, signData.data]);
+              } else {
+                setTextSigns(prev => [...prev, signData.data]);
               }
-              setTranslatedSigns(prev => [...prev, signData]);
             } catch (e) {
               console.error("Error parsing line:", e, line);
             }
           }
         }
       }
-
     } catch (error) {
       console.error("Error translating to sign language:", error);
       setError('Failed to translate. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const renderSign = (sign, index) => {
-    if (sign.type === 'error') {
-      return <div key={index} className="p-4 bg-red-50 text-red-500 rounded">{sign.error}</div>;
-    }
-
-    return (
-      <div key={index} className="p-4 bg-gray-50 rounded">
-        {sign.type === 'video' ? (
-          <div className="aspect-w-16 aspect-h-9">
-            <video
-              src={sign.data}
-              controls
-              autoPlay
-              className="w-full h-full object-contain"
-              onError={(e) => console.error("Video error:", e)}
-            />
-          </div>
-        ) : (
-          <p className="text-gray-700">{sign.data}</p>
-        )}
-      </div>
-    );
-  };
+  }, [generatedText]); // Only recreate if generatedText changes
 
   return (
     <main className="min-h-screen p-8">
@@ -165,12 +142,19 @@ export default function TextToSigns() {
             </div>
           )}
 
-          {Array.isArray(translatedSigns) && translatedSigns.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold">Sign Language Videos</h2>
-              <div className="grid gap-4">
-                {translatedSigns.map((sign, index) => renderSign(sign, index))}
-              </div>
+          {videoSigns.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-2xl font-semibold mb-4">Sign Language Videos</h2>
+              <SequentialVideoPlayer videoUrls={videoSigns} />
+            </div>
+          )}
+
+          {textSigns.length > 0 && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-semibold mb-2">Text Signs/Messages:</h3>
+              {textSigns.map((text, index) => (
+                <p key={index} className="text-gray-700">{text}</p>
+              ))}
             </div>
           )}
 
