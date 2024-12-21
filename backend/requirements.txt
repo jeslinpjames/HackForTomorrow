@@ -1,2 +1,7 @@
 sign-language-translator
 flask
+python-dotenv
+google-generativeai
+PyPDF2
+langchain
+faiss-cpu
