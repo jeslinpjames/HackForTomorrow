@@ -17,11 +17,16 @@ export default function Page() {
     const [showLearning, setShowLearning] = useState(false);
     const [showButtons, setShowButtons] = useState(false);
 
+    // Add new control states
+    const [sceneDescribed, setSceneDescribed] = useState(false);
+    const [learningNarrated, setLearningNarrated] = useState(false);
+
     useEffect(() => {
         let stream = null;
         const initCamera = async () => {
             try {
                 stream = await startCamera();
+                // Use fixed 3000ms delay for capture
                 setTimeout(() => handleCapture(stream), 3000);
             } catch (err) {
                 setError(err.message);
@@ -54,42 +59,59 @@ export default function Page() {
         speakText("Processing image, please wait...");
 
         const formData = new FormData();
-        formData.append("image", blob, "captured_image.png");
+        formData.append("image", blob, "captured_image.jpg");
 
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/scene-description`, {
                 method: "POST",
                 body: formData,
+                // Add proper headers
+                headers: {
+                    'Accept': 'application/json',
+                },
             });
 
             if (!response.ok) {
-                throw new Error("Failed to process image");
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to process image");
             }
 
             const data = await response.json();
-            setSceneDescription(data.scene_description || "");
+            
+            // Validate response data
+            if (!data.scene_description) {
+                throw new Error("Invalid response from server");
+            }
+
+            setSceneDescription(data.scene_description);
             setHasLearning(data.has_learning || false);
             setLearningContent(data.learning || "");
             setShowButtons(true);
             
-            speakText(data.scene_description, () => {
-                if (data.has_learning) {
-                    speakText("Would you like to learn more about what you're seeing?");
-                }
-            });
+            // Sequential speech
+            await speakText(data.scene_description);
+            if (data.has_learning) {
+                await speakText("Would you like to learn more about what you're seeing?");
+            }
         } catch (err) {
-            setError("Error processing image");
-            speakText("Error processing image");
+            setError(err.message);
+            // speakText("Error processing image: " + err.message);
         } finally {
             setIsProcessing(false);
         }
     };
 
     const handleYes = () => {
-        if (hasLearning) {
+        if (hasLearning && !learningNarrated) {
+            setLearningNarrated(true);
             setShowLearning(true);
             speakText(learningContent);
         }
+    };
+
+    const handleHover = (text) => {
+        window.speechSynthesis.cancel();
+        speakText(text);
     };
 
     const handleNo = () => router.refresh();
@@ -97,45 +119,53 @@ export default function Page() {
     const handleBack = () => router.push("/blind");
 
     return (
-        <div className="min-h-screen bg-black text-white p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-6">
-                    {isProcessing && <p className="text-4xl">Processing image...</p>}
-                    {error && <p className="text-4xl text-red-500">{error}</p>}
-                    {sceneDescription && (
-                        <p className="text-4xl">{sceneDescription}</p>
-                    )}
-                    {showLearning && learningContent && (
-                        <div className="bg-white text-black p-6 rounded-xl">
-                            <h2 className="text-3xl font-bold mb-4">More Information:</h2>
-                            <p className="text-2xl">{learningContent}</p>
-                        </div>
-                    )}
-                </div>
+        <div className="min-h-screen bg-black text-white flex p-6">
+            <div className="flex-1 flex flex-col items-start justify-center p-6 overflow-auto">
+                {isProcessing && <p className="mb-6 text-6xl">Processing image, please wait...</p>}
+                {error && <p className="text-red-500 mb-6 text-4xl">{error}</p>}
+                
+                {!isProcessing && !error && sceneDescription && (
+                    <div className="mb-8 text-center max-w-2xl">
+                        <p className="text-5xl">{sceneDescription}</p>
+                    </div>
+                )}
 
-                {showButtons && (
-                    <div className="flex flex-col space-y-4">
+                {showLearning && learningContent && (
+                    <div className="mb-8 text-center max-w-2xl bg-white text-black p-8 rounded-xl shadow-lg transition-all duration-500">
+                        <h2 className="font-bold text-5xl mb-4">More Information:</h2>
+                        <p className="text-4xl">{learningContent}</p>
+                    </div>
+                )}
+            </div>
+
+            {showButtons && (
+                <div className="flex-1 flex flex-col justify-between p-6">
+                    <div className="flex flex-col space-y-4 h-full">
                         <button
+                            onMouseEnter={() => handleHover('Yes button, click to continue')}
                             onClick={handleYes}
-                            className="w-full p-8 text-4xl bg-green-600 hover:bg-green-700 rounded-xl"
+                            className="w-full h-1/3 bg-green-600 text-white font-extrabold text-7xl rounded-xl hover:bg-green-700 transform hover:scale-110 transition-transform duration-200"
                         >
                             Yes
                         </button>
                         <button
+                            onMouseEnter={() => handleHover('No button, to stop')}
                             onClick={handleNo}
-                            className="w-full p-8 text-4xl bg-red-600 hover:bg-red-700 rounded-xl"
+                            className="w-full h-1/3 bg-red-600 text-white font-extrabold text-7xl rounded-xl hover:bg-red-700 transform hover:scale-110 transition-transform duration-300"
                         >
                             No
                         </button>
                         <button
+                            onMouseEnter={() => handleHover('Back to Home button')}
                             onClick={handleBack}
-                            className="w-full p-8 text-4xl bg-blue-600 hover:bg-blue-700 rounded-xl"
+                            className="w-full h-1/3 bg-blue-600 text-white font-extrabold text-7xl rounded-xl hover:bg-blue-700 transform hover:scale-110 transition-transform duration-300"
                         >
                             Back to Home
                         </button>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
+            
             <video ref={videoRef} autoPlay className="hidden" />
             <canvas ref={canvasRef} className="hidden" />
         </div>
