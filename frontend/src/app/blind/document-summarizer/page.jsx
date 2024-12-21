@@ -16,6 +16,20 @@ const Upload = () => {
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Get available voices and set a female voice
+      const voices = window.speechSynthesis.getVoices();
+      const femaleVoice = voices.find(voice => 
+        voice.name.includes('Female') || 
+        voice.name.includes('female') ||
+        voice.name.includes('Samantha') ||
+        voice.name.includes('Microsoft Zira')
+      );
+      
+      if (femaleVoice) {
+        utterance.voice = femaleVoice;
+      }
+      
       utterance.rate = 0.9;
       utterance.pitch = 1;
       
@@ -163,6 +177,15 @@ const Upload = () => {
       setStatus("Speech recognition is not supported in this browser");
       return;
     }
+  }, []);
+
+  // Add this useEffect to handle voice loading
+  useEffect(() => {
+    // Some browsers need a small delay to load voices
+    window.speechSynthesis.onvoiceschanged = () => {
+      const voices = window.speechSynthesis.getVoices();
+      console.log("Available voices loaded:", voices.length);
+    };
   }, []);
 
   return (
