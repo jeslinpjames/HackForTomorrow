@@ -3,8 +3,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as mediapipe from '@mediapipe/hands';
 import { Camera } from '@mediapipe/camera_utils';
 import { Hands } from '@mediapipe/hands';
-import { Camera as CameraIcon } from 'lucide-react';
+import { Camera as CameraIcon, BookOpen, RefreshCcw, ArrowRight } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 const HandSignDetector = () => {
   const videoRef = useRef(null);
@@ -12,6 +13,11 @@ const HandSignDetector = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [detectedLetter, setDetectedLetter] = useState('');
+  const [isPracticeMode, setIsPracticeMode] = useState(false);
+  const [currentTarget, setCurrentTarget] = useState(null);
+  const [feedback, setFeedback] = useState('');
+  
+  const availableLetters = ['A', 'B', 'D', 'U', 'W', 'Y'];
   
   const classifyHandSign = (landmarks) => {
     // Helper function to calculate angle between three points
@@ -68,6 +74,23 @@ const HandSignDetector = () => {
     }
     
     return '?';
+  };
+
+  const startPracticeMode = () => {
+    setIsPracticeMode(true);
+    selectNewTarget();
+  };
+
+  const selectNewTarget = () => {
+    const newTarget = availableLetters[Math.floor(Math.random() * availableLetters.length)];
+    setCurrentTarget(newTarget);
+    setFeedback('');
+  };
+
+  const resetPractice = () => {
+    setIsPracticeMode(false);
+    setCurrentTarget(null);
+    setFeedback('');
   };
 
   useEffect(() => {
@@ -133,6 +156,17 @@ const HandSignDetector = () => {
         // Classify hand sign
         const letter = classifyHandSign(landmarks);
         setDetectedLetter(letter);
+
+        // Handle practice mode logic
+        if (isPracticeMode && currentTarget && letter !== '?') {
+          if (letter === currentTarget) {
+            if (feedback !== 'correct') {
+              setFeedback('correct');
+            }
+          } else if (feedback !== 'correct') {
+            setFeedback('incorrect');
+          }
+        }
       }
     });
 
@@ -147,7 +181,7 @@ const HandSignDetector = () => {
       camera.stop();
       hands.close();
     };
-  }, []);
+  }, [isPracticeMode, currentTarget]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
@@ -183,12 +217,57 @@ const HandSignDetector = () => {
           )}
         </div>
 
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-          <h2 className="text-xl font-semibold mb-2">Detected Letter:</h2>
-          <div className="text-6xl font-bold text-center text-blue-600">
-            {detectedLetter || '?'}
-          </div>
+        <div className="mt-4 flex gap-4">
+          <Button 
+            onClick={isPracticeMode ? resetPractice : startPracticeMode}
+            className="flex items-center gap-2"
+          >
+            {isPracticeMode ? (
+              <>
+                <RefreshCcw className="w-4 h-4" />
+                End Practice
+              </>
+            ) : (
+              <>
+                <BookOpen className="w-4 h-4" />
+                Start Practice Mode
+              </>
+            )}
+          </Button>
         </div>
+
+        {isPracticeMode ? (
+          <div className="mt-4 space-y-4">
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <h2 className="text-xl font-semibold mb-2">Practice Mode</h2>
+              <div className="text-center space-y-4">
+                <div className="text-4xl font-bold">
+                  Show me the letter: <span className="text-blue-600">{currentTarget}</span>
+                </div>
+                {feedback === 'correct' && (
+                  <div className="text-green-600 font-semibold">Correct!</div>
+                )}
+                {feedback === 'incorrect' && (
+                  <div className="text-red-600 font-semibold">Keep trying! Show the letter {currentTarget}</div>
+                )}
+                <Button
+                  onClick={selectNewTarget}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                  Next Letter
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+            <h2 className="text-xl font-semibold mb-2">Detected Letter:</h2>
+            <div className="text-6xl font-bold text-center text-blue-600">
+              {detectedLetter || '?'}
+            </div>
+          </div>
+        )}
 
         <div className="mt-4 text-sm text-gray-600">
           <p>Currently detecting letters: A, B, D, U, W, Y</p>
