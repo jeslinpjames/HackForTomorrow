@@ -8,3 +8,4 @@ OUTPUT_FOLDER
 node_modules
 frontend/node_modules
 uploads/
+sign-lang-dataset
