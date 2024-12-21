@@ -20,17 +20,16 @@ return (
                     onClick={() => router.push('/blind')}
                 >
                     <EyeOffIcon className="w-5 h-5" />
-                    <span>Blind Assistance</span>
+                    <span>Visual Assistance</span>
                 </Button>
 
                 <Button 
                     size="lg"
-                    variant="secondary"
                     className="min-w-[200px] space-x-2"
                     onClick={() => router.push('/deaf')}
                 >
                     <EarIcon className="w-5 h-5" />
-                    <span>Deaf Assistance</span>
+                    <span>Hearing Assistance</span>
                 </Button>
             </div>
         </div>
