@@ -27,6 +27,7 @@
     "next": "14.2.21",
     "react": "^18",
     "react-dom": "^18",
+    "react-pdf": "^9.2.1",
     "react-router-dom": "^6.28.1",
     "react-webcam": "^7.2.0",
     "run-parallel": "^1.2.0",
