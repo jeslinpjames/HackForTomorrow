@@ -29,21 +29,61 @@ def generate_psl_text(topic):
     """
     Generates a short, simple, and PSL-friendly text about a given topic using the Gemini model.
     """
+    # prompt = (
+    #     "We are creating a video in Pakistan Sign Language (PSL). "
+    #     "We have a simplified vocabulary in PSL. "
+    #     "Please ensure your text only contains the following words or synonyms that are PSL-friendly:\n\n"
+    #     "PSL-friendly words examples : [sun, tree, car, apple,  ...] dont just use these words use more words  \n\n"
+    #     "Write a short, simple summary about the given topic focusing on its use case or importance.\n"
+    #     # "- Use as few unique words as possible\n"
+    #     "- Choose from the PSL-friendly words or their simplest forms\n"
+    #     "- Keep it under 3 sentences\n"
+    #     "- Avoid punctuation like ! ? ,\n"
+    #     "- Use straightforward, basic language\n\n"
+    #     f"Topic: {topic}\n\n"
+    #     "Response format:\n"
+    #     "- Short description of the topic\n"
+    #     "- Explanation of its use case or importance\n\n"
+    #     "Please ensure the text is PSL-compliant, straightforward, and avoids unnecessary details. make sure to not just use the words i have given in example"
+    # )
+
+    # prompt = (
+    #     "We are creating a video in Pakistan Sign Language (PSL) to educate and inform viewers about various topics. "
+    #     "Please generate a short and simple summary about the given topic, focusing on its use case or importance. "
+    #     "The description should use only essential words in the correct order to ensure clarity. "
+    #     "Avoid punctuation like exclamation marks (!), question marks (?), or commas (,). "
+    #     "Grammar does not need to be formal; use single, straightforward words that exist in PSL. "
+    #     "For example, use 'tree' instead of 'trees' or 'go' instead of 'goes'. The text should be concise and relevant, ideally under 3 sentences.\n\n"
+    #     f"Topic: {topic}\n\n"
+    #     "Response format:\n"
+    #     "- A short description of the topic\n"
+    #     "- A simple explanation of its use case or importance\n\n"
+    #     "Ensure the text avoids unnecessary details and uses only PSL-compatible words."
+    # )
+
     prompt = (
-        "We are creating a video in Pakistan Sign Language (PSL) to educate and inform viewers about various topics.Create a short, simple summary about the given topic, focusing on its use case or importance. "
-        "The description should be clear, easy to understand, and avoid complex language. use simple words   "
-        "The text should be concise and relevant to the topic, ideally under 3 sentences.\n\n"
+        "We are creating a video in Pakistan Sign Language (PSL). "
+        "We have a simplified vocabulary in PSL. "
+        "Please ensure your text only contains the following words or synonyms that are PSL-friendly:\n\n"
+        "PSL-friendly words examples: [sun, tree, car, apple, ...] do not just use these examples; expand to include more PSL-compliant words.\n\n"
+        "Write a short, simple, and informative summary about the given topic focusing on its use case, importance, and a key fact or concept that helps viewers understand the topic better.\n"
+        "- Choose from the PSL-friendly words or their simplest forms.\n"
+        "- Keep it under 4 sentences.\n"
+        "- Avoid punctuation like ! ? ,\n"
+        "- Use straightforward, basic language that explains the concept clearly and adds value to learning.\n\n"
         f"Topic: {topic}\n\n"
         "Response format:\n"
-        "- Short description of the topic\n"
-        "- Explanation of its use case or importance\n\n"
-        "Please ensure the text is straightforward and avoids unnecessary details. make sure not to use ! or ? or , in the response also you dont have to follow proper gramer and stuff the word just  correct words in order for example use tree instead of trees etc just word by word in oder is enough"
+        "- A short description of the topic.\n"
+        "- An explanation of its use case or importance.\n"
+        "- One key fact or concept to help viewers understand the topic better.\n\n"
+        "Please ensure the text is PSL-compliant, clear, and provides educational value without unnecessary details. Avoid repeating the same ideas."
     )
 
     # Generate text using Gemini model
     response = text_model.generate_content([prompt])
     generated_text = "".join(chunk.text for chunk in response)
     return generated_text.strip()
+
 
 
 def main():
