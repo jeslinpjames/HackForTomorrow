@@ -75,20 +75,21 @@ def spell_out_and_translate(model, word):
     print(f"Spelled out and translated word '{word}': {spelled_signs}")
     return spelled_signs
 
-# Initialize the rule-based text-to-sign translator model for English
-model = slt.models.ConcatenativeSynthesis(
-   text_language="english", sign_language="pk-sl", sign_format="video"
-)
+if __name__ == "__main__":
+    # Initialize the rule-based text-to-sign translator model for English
+    model = slt.models.ConcatenativeSynthesis(
+        text_language="english", sign_language="pk-sl", sign_format="video"
+    )
 
-# Example translation
-text_english = " my name  is nabeel."  # Input English sentence
-translated_signs = fail_safe_translate(model, text_english)
+    # Example translation
+    text_english = "This is my car "  # Input English sentence
+    translated_signs = fail_safe_translate(model, text_english)
 
-# Display the result
-for sign in translated_signs:
-    if isinstance(sign, slt.Video):  # If translation succeeded and returned a video object
-        sign.show()
-    else:
-        print(sign)  # Print spelled-out signs or error messages
+    # Display the result
+    for sign in translated_signs:
+        if isinstance(sign, slt.Video):  # If translation succeeded and returned a video object
+            sign.show()
+        else:
+            print(sign)  # Print spelled-out signs or error messages
 
-print("Translation complete.")
+    print("Translation complete.")
