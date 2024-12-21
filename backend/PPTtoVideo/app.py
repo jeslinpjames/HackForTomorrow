@@ -1,14 +1,17 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from PPT_Script import generate_scripts
 import os
 import google.generativeai as genai  # Add Generative AI import
 
 app = Flask(__name__)
+CORS(app)
+
 UPLOAD_FOLDER = 'uploads'
 AUDIO_FOLDER = 'static/audios'
 PDF_FOLDER = 'static/pdfs'  # Ensure PDF folder is defined
 
-genai.configure(api_key='YOUR_API_KEY')  # Initialize Generative AI with your API key
+genai.configure(api_key='AIzaSyAuRTNzpXkv3b63x5AoR83PmFB2oqb2ZKo')  # Initialize Generative AI with your API key
 
 @app.route('/api/upload-ppt', methods=['POST'])
 def upload_ppt():
@@ -17,10 +20,17 @@ def upload_ppt():
     file = request.files['file']
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
-    ppt_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(ppt_path)
-    slides = generate_scripts(ppt_path)
-    return jsonify({'slides': slides, 'pdf_url': f"/static/pdfs/{os.path.splitext(file.filename)[0]}.pdf"})
+        
+    try:
+        ppt_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(ppt_path)
+        slides = generate_scripts(ppt_path)
+        return jsonify({'slides': slides})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        if os.path.exists(ppt_path):
+            os.remove(ppt_path)
 
 # ...existing code...
 
