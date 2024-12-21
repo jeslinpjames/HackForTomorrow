@@ -1,6 +1,6 @@
-
 import os
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from dotenv import load_dotenv
@@ -8,6 +8,13 @@ from dotenv import load_dotenv
 from rag import RAGSystem, allowed_file
 
 app = Flask(__name__)
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:3000"],
+        "methods": ["GET", "POST", "DELETE"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 load_dotenv()
 
 # Configuration
@@ -79,6 +86,11 @@ def delete_document(filename):
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error deleting document: {str(e)}'}), 500
 
+@app.route('/query', methods=['POST'])
+def query():
+    # Redirect old endpoint to new rag_query endpoint
+    return rag_query()
+
 @app.route('/rag_query', methods=['POST'])
 def rag_query():
     try:
@@ -87,18 +99,63 @@ def rag_query():
         filename = data.get("filename")
         
         if not query or not filename:
-            return jsonify({"error": "Query and filename are required"}), 400
+            return jsonify({
+                "status": "error",
+                "message": "Query and filename are required"
+            }), 400
         
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(filename))
         if not os.path.exists(file_path):
-            return jsonify({"error": f"File not found: {filename}"}), 404
+            return jsonify({
+                "status": "error",
+                "message": f"File not found: {filename}"
+            }), 404
         
         rag_system = RAGSystem(pdf_path=file_path, api_key=GOOGLE_AI_API_KEY)
         response = rag_system.generate_response(query)
-        return jsonify({"response": response})
+        return jsonify({
+            "status": "success",
+            "response": response
+        })
     
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@app.route('/summarize', methods=['POST'])
+def summarize():
+    try:
+        data = request.get_json()
+        filename = data.get("filename")
+        
+        if not filename:
+            return jsonify({
+                "status": "error",
+                "message": "Filename is required"
+            }), 400
+        
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(filename))
+        if not os.path.exists(file_path):
+            return jsonify({
+                "status": "error",
+                "message": f"File not found: {filename}"
+            }), 404
+        
+        rag_system = RAGSystem(pdf_path=file_path, api_key=GOOGLE_AI_API_KEY)
+        summary = rag_system.generate_response("Please provide a comprehensive summary of this document.")
+        
+        return jsonify({
+            "status": "success",
+            "summary": summary
+        })
+    
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
