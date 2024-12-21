@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
-from sentenceToSignLanguage import fail_safe_translate, model
+from SignLanguage.sentenceToSignLanguage import fail_safe_translate, model
 import sign_language_translator as slt
 
 # Load API Key
