@@ -80,8 +80,10 @@ export default function TextToSigns() {
             try {
               const signData = JSON.parse(line);
               if (signData.type === 'video') {
-                // Use functional update to ensure state updates are sequential
-                setVideoSigns(prev => [...prev, signData.data]);
+                setVideoSigns(prev => [...prev, {
+                  url: signData.data,
+                  caption: signData.caption
+                }]);
               } else {
                 setTextSigns(prev => [...prev, signData.data]);
               }
