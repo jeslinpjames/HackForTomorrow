@@ -47,56 +47,40 @@ const BrailleTranslatePage = () => {
         }
 
         try {
-            speakText(
-                "Translating video to Braille. This may take a few moments.",
-            );
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-            const ur = `http://localhost:5000/api/youtube-braille/?url=${
-                encodeURIComponent(videoURL)
-            }`;
-            const response = await fetch(ur, {
+            speakText("Translating video to Braille. This may take a few moments.");
+            const response = await fetch(`http://127.0.0.1:5000/api/youtube-braille/?url=${encodeURIComponent(videoURL)}`, {
                 method: "GET",
-                signal: controller.signal,
                 headers: {
                     "Accept": "application/json",
                 },
             });
-
-            clearTimeout(timeoutId);
 
             if (!response.ok) {
                 throw new Error("Translation failed");
             }
 
             const data = await response.json();
-
             if (!data.success || !data.translation) {
                 throw new Error("Invalid response format");
             }
 
-            let translationText = typeof data.translation === "object"
-                ? JSON.stringify(data.translation, null, 2)
-                : String(data.translation);
-
-            translationText = translationText.replace(/\[object Object\]/g, "");
-
-            const blobContent = translationText.replace(/\n/g, "\r\n");
-            const blob = new Blob([blobContent], {
+            // Extract original and braille transcripts
+            const { original_transcript, braille_transcript } = data.translation;
+            
+            // Create content for the file
+            const fileContent = `Original Transcript:\n${original_transcript}\n\nBraille Transcript:\n${braille_transcript}`;
+            
+            const blob = new Blob([fileContent], {
                 type: "text/plain",
                 endings: "native",
             });
 
             const url = URL.createObjectURL(blob);
             setFileURL(url);
-            speakText(
-                "Translation complete. You can now download the Braille file.",
-            );
+            speakText("Translation complete. You can now download the Braille file.");
         } catch (err) {
-            console.log(err);
-            const errorMessage = err.message ||
-                "Translation failed. Please try again.";
+            console.error(err);
+            const errorMessage = err.message || "Translation failed. Please try again.";
             setError(errorMessage);
             speakText(`Error: ${errorMessage}`);
         } finally {
