@@ -222,6 +222,36 @@ def generate_psl_text_api():
     generated_text = generate_psl_text(topic)
     return jsonify({"generated_text": generated_text})
 
+def process_sign(sign, caption):
+    """Helper function to process a sign video and attach a caption."""
+    unique_filename = f"{uuid.uuid4()}.mp4"
+    temp_path = os.path.join(tempfile.gettempdir(), unique_filename)
+
+    try:
+        if isinstance(sign, slt.Video):
+            try:
+                sign.save(temp_path, overwrite=True)
+            except TypeError:
+                sign.save(temp_path)
+
+            with open(temp_path, "rb") as video_file:
+                video_base64 = base64.b64encode(video_file.read()).decode("utf-8")
+
+            return json.dumps({
+                "type": "video",
+                "data": f"data:video/mp4;base64,{video_base64}",
+                "caption": caption
+            }) + "\n"
+        else:
+            return json.dumps({
+                "type": "text",
+                "data": str(sign),
+                "caption": caption
+            }) + "\n"
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
 @app.route("/translate_to_sign", methods=["POST"])
 def translate_to_sign_api():
     data = request.json
@@ -231,54 +261,18 @@ def translate_to_sign_api():
 
     def generate_signs():
         try:
-            signs = fail_safe_translate(model, text)
-            for sign in signs:
+            # Now returns (sign, caption) tuples
+            signs_with_captions = fail_safe_translate(model, text)
+            
+            for sign, caption in signs_with_captions:
                 try:
-                    if isinstance(sign, slt.Video):
-                        # Generate a unique filename
-                        unique_filename = f"{uuid.uuid4()}.mp4"
-                        temp_path = os.path.join(tempfile.gettempdir(), unique_filename)
-
-                        try:
-                            # Save the video with overwrite option if available
-                            try:
-                                sign.save(temp_path, overwrite=True)
-                            except TypeError:
-                                sign.save(temp_path)  # Fallback if overwrite not supported
-
-                            # Read and encode the video
-                            with open(temp_path, "rb") as video_file:
-                                video_base64 = base64.b64encode(video_file.read()).decode("utf-8")
-
-                            response = {
-                                "type": "video",
-                                "data": f"data:video/mp4;base64,{video_base64}"
-                            }
-                            print(f"Successfully processed video: {unique_filename}")
-                            
-                        finally:
-                            # Clean up temp file
-                            if os.path.exists(temp_path):
-                                try:
-                                    os.remove(temp_path)
-                                except Exception as e:
-                                    print(f"Warning: Could not remove temp file {temp_path}: {e}")
-
-                    else:
-                        response = {
-                            "type": "text",
-                            "data": str(sign)
-                        }
-                        print(f"Processing text sign: {str(sign)}")
-
-                    yield json.dumps(response) + "\n"
-
+                    yield process_sign(sign, caption)
                 except Exception as e:
-                    error_msg = f"Error processing sign: {str(e)}"
-                    print(error_msg)
+                    print(f"Error processing sign: {e}")
                     yield json.dumps({
                         "type": "text",
-                        "data": error_msg
+                        "data": f"Error with sign: {e}",
+                        "caption": caption
                     }) + "\n"
 
         except Exception as e:

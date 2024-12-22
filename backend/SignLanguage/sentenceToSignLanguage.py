@@ -37,42 +37,46 @@ def preprocess_text(text):
     """
     return re.sub(r'\w+\((.*?)\)', r'\1', text)
 
+def has_word_sign(model, word):
+    """Check if word exists in dictionary."""
+    try:
+        model.translate(word)
+        return True
+    except ValueError:
+        return False
+
 def fail_safe_translate(model, text):
-    """
-    Translates preprocessed text to sign language with fail-safe handling for missing tokens.
-    Splits missing tokens into letters and translates them individually, handling single letters explicitly.
-    """
+    """Translates text with word-level or letter-level signs."""
     preprocessed_text = preprocess_text(text)
     words = preprocessed_text.split()
     translated_signs = []
 
     for word in words:
         try:
-            # Attempt to translate each word individually
-            translated_sign = model.translate(word)
-            translated_signs.append(translated_sign)  # Collect successful translations
+            if has_word_sign(model, word):
+                # We have a sign for the whole word
+                sign = model.translate(word)
+                translated_signs.append((sign, word))  # (sign, caption)
+            else:
+                # Split into letters
+                spelled_signs = spell_out_and_translate(model, word)
+                translated_signs.extend(spelled_signs)
         except ValueError:
-            # Handle missing tokens by spelling out and translating letters
-            print(f"Error translating word '{word}'. Spelling it out.")
             spelled_signs = spell_out_and_translate(model, word)
-            translated_signs.extend(spelled_signs)  # Add translated letters
+            translated_signs.extend(spelled_signs)
 
     return translated_signs
 
 def spell_out_and_translate(model, word):
-    """
-    Spell out a word letter by letter and translate each letter individually, handling single letters explicitly.
-    """
+    """Returns list of (sign, letter) tuples."""
     spelled_signs = []
     for char in word:
-        # Map single letters to their corresponding representation
         mapped_char = SINGLE_LETTER_MAPPING.get(char.lower(), char)
         try:
             translated_sign = model.translate(mapped_char)
-            spelled_signs.append(translated_sign)
+            spelled_signs.append((translated_sign, char))  # (sign, caption)
         except ValueError:
-            spelled_signs.append(f"Sign for '{char}' not found.")
-    print(f"Spelled out and translated word '{word}': {spelled_signs}")
+            spelled_signs.append((f"Sign for '{char}' not found.", char))
     return spelled_signs
 
 # Initialize the rule-based text-to-sign translator model for English
@@ -91,7 +95,7 @@ if __name__ == "__main__":
     translated_signs = fail_safe_translate(model, text_english)
 
     # Display the result
-    for sign in translated_signs:
+    for sign, caption in translated_signs:
         if isinstance(sign, slt.Video):  # If translation succeeded and returned a video object
             sign.show()
         else:
