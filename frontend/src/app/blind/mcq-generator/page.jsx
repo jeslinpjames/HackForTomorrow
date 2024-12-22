@@ -33,7 +33,7 @@ const MCQPage = () => {
 
         try {
             const response = await axios.post(
-                'http://127.0.0.1:5001/mcq/generatemcq/',
+                'http://127.0.0.1:5000/api/generate-mcq',  // Updated endpoint
                 { chapter_name: chapterName },
                 { 
                     headers: { 
