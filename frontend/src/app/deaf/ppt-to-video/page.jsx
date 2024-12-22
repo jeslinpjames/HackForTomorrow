@@ -5,12 +5,16 @@ export default function PPTViewer() {
     const [slides, setSlides] = useState([]);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
     const audioRef = useRef(null);
 
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        setLoading(true);
+        setError(null);
         const formData = new FormData();
         formData.append('file', file);
 
@@ -21,14 +25,17 @@ export default function PPTViewer() {
             });
             
             const data = await response.json();
-            if (data.error) {
-                console.error('Error processing PPT:', data.error);
-                return;
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to process PPT');
             }
+            
             setSlides(data.slides);
             setCurrentSlide(0);
         } catch (error) {
-            console.error('Error processing PPT:', error);
+            setError(error.message);
+            console.error('Error:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -60,14 +67,28 @@ export default function PPTViewer() {
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">PPT Viewer</h1>
+            
             <input
                 type="file"
                 accept=".ppt,.pptx"
                 onChange={handleFileUpload}
                 className="mb-4 p-2 border rounded"
+                disabled={loading}
             />
 
-            {slides.length > 0 && (
+            {loading && (
+                <div className="text-center py-4">
+                    <p>Processing PPT file...</p>
+                </div>
+            )}
+
+            {error && (
+                <div className="text-red-500 mb-4">
+                    Error: {error}
+                </div>
+            )}
+
+            {slides.length > 0 && !loading && (
                 <div className="flex flex-col items-center">
                     <img
                         src={`http://127.0.0.1:5000${slides[currentSlide].image_url}`}
