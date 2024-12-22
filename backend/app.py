@@ -18,6 +18,7 @@ from werkzeug.utils import secure_filename
 from TalkToPDF.rag import RAGSystem, allowed_file
 import re
 from PPTtoVideo.PPT_Script import generate_scripts  # Add this import
+from YoutubeBraille.utils import YouTubeBrailleTranslator  # Add this import
 
 app = Flask(__name__)
 CORS(app)
@@ -446,6 +447,28 @@ def upload_ppt():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/youtube-braille/', methods=['GET'])
+def translate_to_braille():
+    video_url = request.args.get('url')
+    if not video_url:
+        return jsonify({"error": "No URL provided"}), 400
+    
+    translator = YouTubeBrailleTranslator()
+    video_id = translator.extract_video_id(video_url)
+    
+    if not video_id:
+        return jsonify({"error": "Invalid YouTube URL"}), 400
+    
+    braille_text = translator.translate_transcript_to_braille(video_id)
+    
+    if not braille_text:
+        return jsonify({"error": "Braille translation failed"}), 500
+
+    return jsonify({
+        "translation": braille_text,
+        "success": True
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
