@@ -17,7 +17,7 @@ const HandSignDetector = () => {
   const [currentTarget, setCurrentTarget] = useState(null);
   const [feedback, setFeedback] = useState('');
   
-  const availableLetters = ['A', 'B', 'D', 'U', 'W', 'Y'];
+  const availableLetters = ['A', 'B', 'D', 'U', 'W'];
   
   const classifyHandSign = (landmarks) => {
     // Helper function to calculate angle between three points
@@ -269,8 +269,7 @@ const HandSignDetector = () => {
           </div>
         )}
 
-        <div className="mt-4 text-sm text-gray-600">
-          <p>Currently detecting letters: A, B, D, U, W, Y</p>
+        <div className="mt-4 text-sm text-gray-600 ">
           <p>Make sure your hand is well-lit and clearly visible to the camera.</p>
         </div>
       </div>

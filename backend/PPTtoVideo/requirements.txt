@@ -1,0 +1,7 @@
+
+google-generativeai
+gtts
+flask
+python-pptx
+react-pdf
+# ...existing dependencies...

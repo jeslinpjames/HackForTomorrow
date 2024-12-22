@@ -141,7 +141,7 @@
 
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Volume2, RefreshCw, Download, Play, Pause } from 'lucide-react';
+import { Volume2, RefreshCw, Download, Play, Pause, Mic } from 'lucide-react'; // Added Mic icon
 import jsPDF from 'jspdf';
 
 const signs = {
@@ -178,6 +178,7 @@ const SignTranslate = () => {
   const [text, setText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(true);
+  const [isListening, setIsListening] = useState(false); // Added state for listening
 
   const handleChange = (e) => {
     setText(e.target.value.toUpperCase());
@@ -243,6 +244,40 @@ const SignTranslate = () => {
     setIsPaused(true);
   };
 
+  const handleSpeechRecognition = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+      alert('Speech recognition not supported in this browser.');
+      return;
+    }
+
+    const recognition = new webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.toUpperCase();
+      setText(transcript);
+      setCurrentIndex(0);
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error(event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-4 bg-white shadow-lg rounded-lg">
       <h1 className="text-2xl font-bold mb-4 text-center">Text to Hand Sign Translation</h1>
@@ -275,6 +310,13 @@ const SignTranslate = () => {
               title="Download PDF"
             >
               <Download size={20} />
+            </button>
+            <button
+              onClick={handleSpeechRecognition}
+              className={`p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 ${isListening && "bg-gray-200"}`}
+              title="Start speech recognition"
+            >
+              <Mic size={20} />
             </button>
           </div>
         </div>
