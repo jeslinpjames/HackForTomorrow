@@ -133,8 +133,8 @@ export default function TextToSigns() {
 
           {generatedText && (
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold">Generated PSL Text</h2>
-              <p className="p-4 bg-gray-50 rounded">{generatedText}</p>
+              <h2 className="text-2xl font-semibold hidden">Generated PSL Text</h2>
+              <p className="p-4 bg-gray-50 rounded hidden">{generatedText}</p>
               <button 
                 onClick={handleTranslateText}
                 className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
