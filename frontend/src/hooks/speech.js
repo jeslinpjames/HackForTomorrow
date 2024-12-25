@@ -50,7 +50,7 @@ export const useSpeech = () => {
     }, [getFemaleVoice]);
 
     const cancelSpeech = useCallback(() => {
-        window.speechSynthesis.cancel();
+        window.speechSynthesis.cancel();        
     }, []);
 
     return {
